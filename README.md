@@ -1,4 +1,4 @@
-# Magnemite-Amie
+#Magnemite-Amie
 
 #Summary:
 #I took my very first coding class that intrduced me to outputing images in college this year.
@@ -14,20 +14,20 @@
 #-------------------------------------------------------------------------------------------------------
 
 
-# Things to know:
+#Things to know
 
 
-# Notes in the code:
-# Unfourtunatley there aren't consistent notes in the code on what all the code does. I'll try to fix that.
+#Notes in the code:
+#Unfourtunatley there aren't consistent notes in the code on what all the code does. I'll try to fix that.
 
 #Racket:
 #The coding language is Raket. 
 #It's niche but powerfull and flexible in weird ways, but the main thing is the function syntax is that function then the inputs inside quatation marks.
-# for example, where python would like (1+1) Raket likes (+ 1 1)
-# download here:
-#https://download.racket-lang.org/
-# help finding what any finction does is here: 
-#file:///C:/Program%20Files/Racket/doc/search/index.html?&q=circle
+#for example, where python would like (1+1) Raket likes (+ 1 1)
+# download Raket here:
+# https://download.racket-lang.org/
+# help finding what any function does is here: 
+# file:///C:/Program%20Files/Racket/doc/search/index.html
 #you can also right-click on the function directly and choose "open in help desk"
 
 
@@ -36,7 +36,7 @@
 #how to design functions. This method includes:
 #First naming the function, recognising the type of it's intake and output, and defining all the variables.
 #Then writing test cases(check-expect) wich will see if your code does what you want it to. The check-expects are run with a variable of the same type of the desired output,
-# just to make sure there's no error in the check expect or misconception about the input and putput type.
+#just to make sure there's no error in the check expect or misconception about the input and putput type.
 #then you make a template that will do what you want your code to do structurally. This is especailly helpfull with recursivel loops.
 #I often leave a copy of the templete in the code file commented out, in case I feel I want to start from scratch
 #Finaly you run your check expects and ensure they work.
