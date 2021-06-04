@@ -1,0 +1,343 @@
+;; The first three lines of this file were inserted by DrRacket. They record metadata
+;; about the language level of this file in a form that our tools can easily process.
+#reader(lib "htdp-beginner-reader.ss" "lang")((modname |Living eye test|) (read-case-sensitive #t) (teachpacks ()) (htdp-settings #(#t constructor repeating-decimal #f #t none #f () #f)))
+(require 2htdp/universe)
+(require 2htdp/image)
+(define WIDTH 800)
+(define HEIGHT 600)
+(define MTS  (empty-scene WIDTH HEIGHT)) ; (rectangle WIDTH HEIGHT "solid" "blue"))
+(define CTR-Y (/ HEIGHT 2)) ;; !!! good practice
+(define CTR-X (/ WIDTH 2)) ;; !!! good practice
+
+;Living Eye test
+
+;Eye template
+(define EYE
+                   (overlay
+                        (circle 40 "outline" "black") 
+                        (circle 10 "solid" "black")
+                        (circle 40 "solid" "white")))
+
+;; Living eye test 
+;;interp. An eye define above moves and changes depending on the mouse
+;; =================
+;; Constants:
+;;Eye background, Eye outline
+;;image of the happy pupil
+;; location of the eye
+;; =================
+;; Data definitions:
+(define-struct living-eye (rot x y blnk))
+;; live-eye is the world state
+;; it passes rotation x and y coordinates (all numbers)
+;; timer is a variable that counts down to zero cond(not zero)
+;;if timer isn't zero the eye is happy
+(define (fn-for-living-eye ES) ;eye state
+  (...
+   (living-eye-rot ES)
+   (living-eye-x ES)
+   (living-eye-y ES)
+   (living-eye-blnk ES)))
+
+(define start-eye (make-living-eye 0 0 0 0))
+;;rotation is baisically time ticking up
+;;Im keeping  it so that when I add live eye
+;;to live-magnemite it's easeir to add
+(define ES1 (make-living-eye 0 400 200 0))
+(define ES2 (make-living-eye 783 600 2 1))
+(define ES3 (make-living-eye 13 20 300 30))
+(define ES4 (make-living-eye 54 765 567 0))
+(define ES5 (make-living-eye 0 400 HEIGHT 0))
+
+(define BLNK-TIME 50)
+;;Blink Time is the number of ticks the blink lasts for
+(define EYE-RAD 40)
+;;Eye Radius is the radius of magnemite's eye.
+;;It's SET as 40 for now don't change it.
+(define EYE-IMG
+  (overlay
+     (circle 40 "solid" "white")
+     (circle 40 0 "light blue")))
+;;eye image is the image of the empty eye.
+
+(define BLNK-IMG
+  (above
+    (square 15 0 "white")
+    (overlay
+        (above
+            (rectangle 50 26 0 "white")
+            (rectangle 50 26 "solid" "white"))
+        (circle 15 "solid" "white")
+        (circle 25 "solid" "black"))))
+;;blnk image is the image of the happy blink
+(define BORD-IMG
+  (rectangle 50 15 "solid" "black"))
+;;bored image is the image of the
+;;emotionless closed eye
+;; =================
+;; Functions:
+
+;; new live-eye -> live-eye
+;; start the world with ...
+;; the rest of the magnemite program
+;;
+(define (main living-eye)
+  (big-bang living-eye                ; live-eye
+            (on-tick   update-rot)  ; live-eye -> update live
+            (to-draw   look)      ; live-eye -> update eye Image
+            (on-mouse  handle-mouse)))  ; WS Integer Integer MouseEvent -> WS00
+
+;--
+;; live-eye -> live-eye
+;; produce the next live eye's rotation and blink
+
+;(define (update-rot live-eye)    ;Stubb
+;  ...
+;  (living-eye-rot live-eye)
+;  (living-eye-x live-eye)
+;  (living-eye-y live-eye)
+;  (living-eye-blnk live-eye))
+
+
+(define (update-rot live-eye)
+  (make-living-eye (+ 1 (living-eye-rot live-eye))
+                 (living-eye-x live-eye)
+                 (living-eye-y live-eye)
+                 (cond
+                   [(> (living-eye-blnk live-eye) 0)
+                   (- (living-eye-blnk live-eye) 1)]
+                   [(= (living-eye-blnk live-eye) -1)
+                    -1]
+                   [else 0])))
+
+;(check-expect (update-rot ES1)
+;              (make-living-eye 1 400 200 0))
+;(check-expect (update-rot ES2)
+;              (make-living-eye 784 600 2 0))
+;(check-expect (update-rot ES3)
+;              (make-living-eye 14 20 300 29))
+
+
+;;mouse handler
+;; live-eye-> live-eye
+;;make the next world state based on the mouse coordinates
+
+(define (handle-mouse live-eye mx my me)
+  (cond [(and
+          (mouse=? me "button-down")
+          ( = (living-eye-blnk live-eye) 0))
+          (make-living-eye
+            (living-eye-rot live-eye)
+            mx my
+            BLNK-TIME)]
+        [(mouse=? me "leave")
+         (make-living-eye
+            (living-eye-rot live-eye)
+            mx my
+            -1)]
+        [(mouse=? me "enter")
+         (make-living-eye
+            (living-eye-rot live-eye)
+            mx my
+            0)]
+        [else
+         (make-living-eye
+            (living-eye-rot live-eye)
+            mx my
+            (living-eye-blnk live-eye))]))
+
+;(check-expect (handle-mouse ES3 90 70 "button-down")
+;              (make-living-eye 13 90 70 30))
+;(check-expect (handle-mouse ES2 300 1 "button-down")
+;              (make-living-eye 783 300 1 1))
+;(check-expect (handle-mouse ES2 300 1 "button-up")
+;              (make-living-eye 783 300 1 1))
+;(check-expect (handle-mouse ES1 2 3 "button-down")
+;              (make-living-eye 0 2 3 BLNK-TIME))
+
+;--
+;; live-eye -> Image
+;;is the eye function called in the to-draw function.
+;; based on the mouse cordinates anad blnk passed from live-eye
+;; render the next eye in the world
+;;if clicked, blink
+;(define (look live-eye) (circle 6 "solid" "silver")) ;stubb
+
+;(check-expect (look ES3)
+;              (overlay (circle 40 "outline" "black")
+;              (place-image
+;               BLNK-IMG EYE-RAD EYE-RAD EYE-IMG)))
+;(check-expect (look ES2)
+;              (overlay (circle 40 "outline" "black")
+;              (place-image
+;               BLNK-IMG EYE-RAD  EYE-RAD EYE-IMG)))
+;(check-expect (look ES1)
+;              (overlay (circle 40 "outline" "black")
+;              (place-image
+;               (circle 10 "solid" "black")
+;               (* (living-eye-x ES1)(/ (* 2 EYE-RAD) WIDTH))
+;               (* (living-eye-y ES1)(/ (* 2 EYE-RAD) HEIGHT))
+;               EYE-IMG)))
+;(check-expect (look ES4)
+;              (overlay (circle 40 "outline" "black")
+;              (place-image
+;               (circle 10 "solid" "black")
+;               (* (living-eye-x ES4)(/ (* 2 EYE-RAD) WIDTH))
+;               (* (living-eye-y ES4)(/ (* 2 EYE-RAD) HEIGHT))
+;               EYE-IMG)))
+;
+;(check-expect (look ES5)
+;              (overlay (circle 40 "outline" "black")
+;              (place-image
+;               (circle 10 "solid" "black")
+;               (* (living-eye-x ES5)(/ (* 2 EYE-RAD) WIDTH))
+;               (* (living-eye-y ES5)(/ (* 2 EYE-RAD) HEIGHT))
+;               EYE-IMG)))
+;
+;;
+;(define (look live-eye)
+;  (overlay (circle 40 "outline" "black")
+;    (cond
+;      [...(live-eye)
+;       (place-image
+;        BLNK-IMG!!! EYE-RAD/2 EYE-RAD/2 EYE-IMG!!!)]
+;      [else
+;       ...(place-image (... live-eye))])))
+
+
+;(define (look live-eye)  this version of look is nice, but
+;                         the pupil wanders outside the eye
+;   (place-image
+;  
+;  
+;  (overlay (circle 40 "outline" "black")
+;    (cond
+;      [(> (living-eye-blnk live-eye) 0)
+;       (place-image
+;        BLNK-IMG EYE-RAD EYE-RAD EYE-IMG)]
+;      [else
+;       (place-image
+;            (circle 10 "solid" "black")
+;            (* (living-eye-x live-eye)(/ (* 2 EYE-RAD) WIDTH))
+;            (* (living-eye-y live-eye)(/ (* 2 EYE-RAD) HEIGHT))
+;            EYE-IMG)]))
+;
+;
+;CTR-X CTR-Y MTS) )
+
+(define (to-ctr-0 CS-CORD)
+  ( - CS-CORD 40))
+  
+(define (to-CS-CORD ctr0)
+  ( + ctr0 40))
+
+(define (lk-scl-x live-eye)
+  (to-ctr-0
+   (* (living-eye-x live-eye)(/ (* 2 EYE-RAD) WIDTH))))
+
+(define (lk-scl-y live-eye)
+  (to-ctr-0
+   (* (living-eye-y live-eye)(/ (* 2 EYE-RAD) HEIGHT))))
+
+(define (hyp live-eye)
+  (sqrt
+    (+
+      (expt (lk-scl-x live-eye) 2)
+      (expt (lk-scl-y live-eye) 2))))
+
+;
+;(define (look live-eye)   This version of look keeps the pupil in the eye, but
+;                          if you circle it with the cursor the pupil outlines a daimond
+;   (place-image
+;  
+;  
+;  (overlay (circle 40 "outline" "black")
+;    (cond
+;      [(> (living-eye-blnk live-eye) 0)
+;       (place-image
+;        BLNK-IMG EYE-RAD EYE-RAD EYE-IMG)]
+;      [else
+;       (place-image
+;            (circle 10 "solid" "black")
+;            (to-CS-CORD
+;            (*(lk-scl-x live-eye)
+;              (abs(/ (lk-scl-x live-eye)(hyp live-eye))))) 
+;            (to-CS-CORD
+;            (*(lk-scl-y live-eye)
+;              (abs(/ (lk-scl-y live-eye)(hyp live-eye))))) 
+;            EYE-IMG)]))
+;
+;
+;CTR-X CTR-Y MTS) )
+
+
+;(define (look live-eye)   This version of look has both niceties but it
+;                          Looks very weird when the pupil jumps the cond
+;   (place-image
+;  
+;  
+;  (overlay (circle 40 "outline" "black")
+;    (cond
+;      [(> (living-eye-blnk live-eye) 0)
+;       (place-image
+;        BLNK-IMG EYE-RAD EYE-RAD EYE-IMG)]
+;      [else
+;       (place-image
+;            (circle 10 "solid" "black")
+;            (cond [(>(hyp live-eye) EYE-RAD)
+;                   (to-CS-CORD
+;            (*(lk-scl-x live-eye)
+;              (abs(/ (lk-scl-x live-eye)(hyp live-eye)))))]
+;                  [else
+;                   (to-CS-Cord (lk-scl-x live-eye))])
+;            (cond [(>(hyp live-eye) EYE-RAD)
+;                   (to-CS-CORD
+;            (*(lk-scl-y live-eye)
+;              (abs(/ (lk-scl-y live-eye)(hyp live-eye)))))]
+;                  [else
+;                   (to-CS-Cord (lk-scl-y live-eye)) 
+;            EYE-IMG)]))
+;
+;
+;CTR-X CTR-Y MTS) )
+
+
+(define (look live-eye)       ;this version of look is nice but the pupil is bound by a square
+
+   (place-image
+  
+  
+  (overlay (circle 40 "outline" "black")
+    (cond
+      [(> (living-eye-blnk live-eye) 0)
+       (place-image
+        BLNK-IMG EYE-RAD EYE-RAD EYE-IMG)]
+      [(< (living-eye-blnk live-eye) 0)
+       (place-image
+        BORD-IMG EYE-RAD EYE-RAD EYE-IMG)]
+      [else
+       (place-image
+            (circle 10 "solid" "black")
+            (cond [(>(hyp live-eye) EYE-RAD)
+                   (to-CS-CORD
+                      (* EYE-RAD
+                      (/(lk-scl-x live-eye) (abs(hyp live-eye)))))]
+                  [else
+                   (to-CS-CORD (lk-scl-x live-eye))])
+            (cond [(>(hyp live-eye) EYE-RAD)
+                   (to-CS-CORD
+                      (* EYE-RAD
+                      (/ (lk-scl-y live-eye)(abs(hyp live-eye)))))]
+                  [else
+                   (to-CS-CORD (lk-scl-y live-eye))]) 
+            EYE-IMG)]))
+
+
+CTR-X CTR-Y MTS) )
+
+
+(main start-eye)
+;12:45 AM 2/14/2021
+
+;110:06 AM 2/15/21 added BORD-IMG and "leave" mouse key
+
